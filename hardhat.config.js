@@ -1,13 +1,20 @@
-require("@nomicfoundation/hardhat-toolbox");
+/**
+* @type import('hardhat/config').HardhatUserConfig
+*/
+require('dotenv').config();
+require("@nomiclabs/hardhat-ethers");
 
-const ALCHEMY_API_KEY = "aXDnapjSBPL8eRb9Uq8wNmXCUTMfqkFp";
-const SEPOLIA_PRIVATE_KEY="ea9958663da67667a35dfbdfdfa621b8be64960e54a60d7440f68ab9d40c143c"
+//require("@nomicfoundation/hardhat-toolbox");
+const { API_URL, PRIVATE_KEY } = process.env;
+
 module.exports = {
   solidity: "0.8.19",
+  defaultNetwork: "sepolia",
   networks: {
+    hardhat: {},
     sepolia: {
-      url: `https://eth-sepolia.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
-      accounts: [SEPOLIA_PRIVATE_KEY]
+       url: API_URL,
+       accounts: [`0x${PRIVATE_KEY}`]
     }
-  }
-};
+ },
+}

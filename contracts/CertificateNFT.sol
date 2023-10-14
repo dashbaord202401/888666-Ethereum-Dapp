@@ -28,15 +28,34 @@ contract CertificateNFT {
         bytes memory signature
     ) external {
         // Verify the signature using the student's address and certificate data
-        bytes32 certificateHash = keccak256(abi.encodePacked(studentAddress, studentName, subject, issueTimestamp));
-        require(certificateHash.toEthSignedMessageHash().recover(signature) == studentAddress, "Invalid signature");
+        bytes32 certificateHash = keccak256(
+            abi.encodePacked(
+                studentAddress,
+                studentName,
+                subject,
+                issueTimestamp
+            )
+        );
+        require(
+            certificateHash.toEthSignedMessageHash().recover(signature) ==
+                studentAddress,
+            "Invalid signature"
+        );
 
         // Store the certificate
-        certificates[studentAddress] = Certificate(studentAddress, studentName, subject, issueTimestamp, signature);
+        certificates[studentAddress] = Certificate(
+            studentAddress,
+            studentName,
+            subject,
+            issueTimestamp,
+            signature
+        );
     }
 
     // Function to get a certificate for a student
-    function getCertificate(address studentAddress) external view returns (Certificate memory) {
+    function getCertificate(
+        address studentAddress
+    ) external view returns (Certificate memory) {
         return certificates[studentAddress];
     }
 }
