@@ -15,24 +15,16 @@ async function main() {
   const network = "maticmum";
   const alchemyProvider = new ethers.providers.AlchemyProvider(network, API_KEY);
   const signer = new ethers.Wallet(PRIVATE_KEY, alchemyProvider);
-
   const contract = require("../artifacts/contracts/CertificateNFT.sol/CertificateNFT.json"); // Replace with the actual path to your contract's artifact
-
   const CertContract = new ethers.Contract(CONTRACT_ADDRESS, contract.abi, signer);
 
-  // Issue a certificate
   const studentAddress = "0xf7d1918a7d87C0773F95b05214A8C0fF41295F29"; // Replace with the student's address
-  const studentName = "Shihab";
-  const degreeName = "BSC";
-  const subject = "CSE";
-  const issueTimestamp = Math.floor(Date.now() / 1000);
+  const certificate = await CertContract.viewCertificate(studentAddress);
 
-  const transactionObj = await CertContract.issueCertificate(studentName, degreeName, subject,
-    studentAddress, issueTimestamp);
-
-  await transactionObj.wait(); // Wait for the transaction to be mined
-
-  console.log("Certificate issued successfully!");
+  console.log("Student Name:", certificate.name); // Access the 'name' field
+  console.log("Degree Name:", certificate.degreeName); // Access the 'degreeName' field
+  console.log("Subject:", certificate.subject); // Access the 'subject' field
+  console.log("Issue Timestamp:", new Date(certificate.timestamp * 1000)); // Access the 'timestamp' field
 }
 
 main()

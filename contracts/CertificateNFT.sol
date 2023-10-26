@@ -1,61 +1,96 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-// Importing OpenZeppelin's ECDSA library for ECC signatures
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-
 contract CertificateNFT {
-    using ECDSA for bytes32;
+    address public owner;
 
-    // Struct to represent a certificate
     struct Certificate {
-        address studentAddress;
-        string studentName;
+        string name;
+        string degreeName;
         string subject;
-        uint256 issueTimestamp;
-        bytes signature;
+        address recipient;
+        uint256 timestamp;
+        bool isIssued;
     }
 
-    // Mapping to store certificates
-    mapping(address => Certificate) public certificates;
+    mapping(bytes32 => Certificate) public certificates;
 
-    // Function to issue a certificate to a student
+    event CertificateIssued(
+        bytes32 indexed certificateHash,
+        address indexed recipient
+    );
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can call this function");
+        _;
+    }
+
     function issueCertificate(
-        address studentAddress,
-        string memory studentName,
+        string memory name,
+        string memory degreeName,
         string memory subject,
-        uint256 issueTimestamp,
-        bytes memory signature
-    ) external {
-        // Verify the signature using the student's address and certificate data
+        address recipient,
+        uint256 timestamp
+    ) public onlyOwner {
+        require(recipient != address(0), "Invalid recipient address");
         bytes32 certificateHash = keccak256(
-            abi.encodePacked(
-                studentAddress,
-                studentName,
-                subject,
-                issueTimestamp
-            )
+            abi.encodePacked(recipient)
         );
         require(
-            certificateHash.toEthSignedMessageHash().recover(signature) ==
-                studentAddress,
-            "Invalid signature"
+            !certificates[certificateHash].isIssued,
+            "Certificate already issued"
         );
 
-        // Store the certificate
-        certificates[studentAddress] = Certificate(
-            studentAddress,
-            studentName,
+        certificates[certificateHash] = Certificate(
+            name,
+            degreeName,
             subject,
-            issueTimestamp,
-            signature
+            recipient,
+            timestamp,
+            true
         );
+        emit CertificateIssued(certificateHash, recipient);
     }
 
-    // Function to get a certificate for a student
-    function getCertificate(
-        address studentAddress
-    ) external view returns (Certificate memory) {
-        return certificates[studentAddress];
+    function verifyCertificate(
+        string memory name,
+        string memory degreeName,
+        string memory subject,
+        address recipient,
+        uint256 timestamp
+    ) public view returns (bool) {
+        bytes32 certificateHash = keccak256(
+            abi.encodePacked(name, degreeName, subject, recipient, timestamp)
+        );
+        return certificates[certificateHash].isIssued;
+    }
+
+    function viewCertificate(address studentAddress)
+        public
+        view
+        returns (
+            string memory name,
+            string memory degreeName,
+            string memory subject,
+            uint256 timestamp
+        )
+    {
+        bytes32 certificateHash = keccak256(
+            abi.encodePacked(studentAddress)
+        );
+        require(
+            certificates[certificateHash].recipient == studentAddress,
+            "No certificate found for this student"
+        );
+        return (
+            certificates[certificateHash].name,
+            certificates[certificateHash].degreeName,
+            certificates[certificateHash].subject,
+            certificates[certificateHash].timestamp
+        );
     }
 }
