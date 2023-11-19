@@ -1,4 +1,4 @@
-// Setup: npm install alchemy-sdk
+// Setting up Alchemy
 const { Network, Alchemy } = require("alchemy-sdk");
 
 // Optional Config object, but defaults to demo api-key and eth-mainnet.

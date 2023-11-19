@@ -1,5 +1,5 @@
+//Viewing data from blockchain
 require('dotenv').config(); // Load environment variables from a .env file
-
 const { ethers } = require("hardhat");
 
 async function main() {

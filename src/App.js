@@ -1,116 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ethers } from 'ethers';
-import './App.css';
 
-// Import the ABI (Application Binary Interface) of the Solidity contract
-import CertificateContract from './contracts/CertificateIssuer.json';
+function ContractInteraction() {
+    const [studentName, setStudentName] = useState('');
+    const [degreeName, setDegreeName] = useState('');
+    const [subject, setSubject] = useState('');
+    const [studentAddress, setStudentAddress] = useState('');
+    const [issueResult, setIssueResult] = useState('');
 
-function App() {
-  const [account, setAccount] = useState('');
-  const [studentName, setStudentName] = useState('');
-  const [subject, setSubject] = useState('');
-  const [issueTimestamp, setIssueTimestamp] = useState('');
-  const [certificate, setCertificate] = useState(null);
+    // Replace with your contract address
+    const CONTRACT_ADDRESS = 'YOUR_CONTRACT_ADDRESS';
+    const API_KEY = 'YOUR_ALCHEMY_API_KEY';
+    const PRIVATE_KEY = 'YOUR_PRIVATE_KEY';
 
-  // Alchemy API Key
-  const alchemyApiKey = 'uwxyI6fu3jZu_7bsMjaNrGOtx7kzT_5G';
+    const issueCertificate = async () => {
+        try {
+            const provider = new ethers.providers.AlchemyProvider(ethers.providers.networks.mainnet, API_KEY);
+            const signer = new ethers.Wallet(PRIVATE_KEY, provider);
 
-  // Replace with your contract address
-  const contractAddress = 'YOUR_CONTRACT_ADDRESS';
+            const contractABI = [
+                // Include the ABI of your CertificateNFT contract here
+                // Example: ['function issueCertificate(string, string, string, address, uint256) public']
+            ];
 
-  const loadBlockchainData = async () => {
-    // Connect to MetaMask
-    if (window.ethereum) {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      const accounts = await provider.listAccounts();
-      setAccount(accounts[0]);
-    } else {
-      alert('MetaMask not detected. Please install MetaMask.');
-    }
-  };
+            const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, signer);
 
-  const issueCertificate = async () => {
-    try {
-      const provider = new ethers.providers.JsonRpcProvider(alchemyApiKey);
-      const contract = new ethers.Contract(contractAddress, CertificateContract.abi, provider);
-      const signer = provider.getSigner();
-      const issueTimestampNumber = parseInt(issueTimestamp);
+            const issueTimestamp = Math.floor(Date.now() / 1000); // Get current timestamp
 
-      // Sign the certificate data
-      const message = ethers.utils.solidityKeccak256(
-        ['address', 'string', 'string', 'uint256'],
-        [account, studentName, subject, issueTimestampNumber]
-      );
-      const signature = await signer.signMessage(message);
+            const transaction = await contract.issueCertificate(studentName, degreeName, subject, studentAddress, issueTimestamp);
 
-      // Send the transaction to issue the certificate
-      const tx = await contract.issueCertificate(account, studentName, subject, issueTimestampNumber, signature);
-      await tx.wait();
+            await transaction.wait();
 
-      alert('Certificate issued successfully!');
-    } catch (error) {
-      console.error('Error issuing certificate:', error);
-    }
-  };
+            setIssueResult('Certificate issued successfully!');
+        } catch (error) {
+            console.error('Error issuing certificate:', error);
+            setIssueResult('Failed to issue certificate');
+        }
+    };
 
-  const getCertificate = async () => {
-    try {
-      const provider = new ethers.providers.JsonRpcProvider(alchemyApiKey);
-      const contract = new ethers.Contract(contractAddress, CertificateContract.abi, provider);
-
-      // Call the contract to retrieve the certificate
-      const cert = await contract.getCertificate(account);
-      setCertificate(cert);
-    } catch (error) {
-      console.error('Error retrieving certificate:', error);
-    }
-  };
-
-  useEffect(() => {
-    loadBlockchainData();
-  }, []);
-
-  return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Certificate Issuer App</h1>
-        <p>Connected Account: {account}</p>
-
+    return (
         <div>
-          <h2>Issue Certificate</h2>
-          <input
-            type="text"
-            placeholder="Student Name"
-            onChange={(e) => setStudentName(e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="Subject"
-            onChange={(e) => setSubject(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="Issue Timestamp"
-            onChange={(e) => setIssueTimestamp(e.target.value)}
-          />
-          <button onClick={issueCertificate}>Issue</button>
+            <h1>Issue Certificate</h1>
+            <input type="text" placeholder="Student Name" onChange={(e) => setStudentName(e.target.value)} />
+            <input type="text" placeholder="Degree Name" onChange={(e) => setDegreeName(e.target.value)} />
+            <input type="text" placeholder="Subject" onChange={(e) => setSubject(e.target.value)} />
+            <input type="text" placeholder="Student Address" onChange={(e) => setStudentAddress(e.target.value)} />
+            <button onClick={issueCertificate}>Issue Certificate</button>
+            <p>{issueResult}</p>
         </div>
-
-        <div>
-          <h2>View Certificate</h2>
-          <button onClick={getCertificate}>View</button>
-          {certificate && (
-            <div>
-              <p>Student Name: {certificate.studentName}</p>
-              <p>Subject: {certificate.subject}</p>
-              <p>Issued at: {new Date(certificate.issueTimestamp * 1000).toLocaleString()}</p>
-            </div>
-          )}
-        </div>
-      </header>
-    </div>
-  );
+    );
 }
 
-export default App;
+export default ContractInteraction;
