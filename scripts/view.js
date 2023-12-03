@@ -18,7 +18,7 @@ async function main() {
   const contract = require("../artifacts/contracts/CertificateNFT.sol/CertificateNFT.json"); // Replace with the actual path to your contract's artifact
   const CertContract = new ethers.Contract(CONTRACT_ADDRESS, contract.abi, signer);
 
-  const studentAddress = "0xf7d1918a7d87C0773F95b05214A8C0fF41295F29"; // Replace with the student's address
+  const studentAddress = "0xdaa23B8CD5Bc84Ff55F1eAc6A9D5929D67d9D1cf"; // Replace with the student's address
   const certificate = await CertContract.viewCertificate(studentAddress);
 
   console.log("Student Name:", certificate.name); // Access the 'name' field

@@ -1,9 +1,10 @@
 // Setting up Alchemy
+require('dotenv').config();
 const { Network, Alchemy } = require("alchemy-sdk");
 
 // Optional Config object, but defaults to demo api-key and eth-mainnet.
 const settings = {
-  apiKey: "FL2LLcHpmU6y2PVSqEnv-3BcXP9yJoZd", // Replace with your Alchemy API Key.
+  apiKey: process.env.API_KEY, // Replace with your Alchemy API Key.
   network: Network.MATIC_MUMBAI, // Replace with your network.
 };
 

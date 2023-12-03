@@ -15,10 +15,7 @@ contract CertificateNFT {
 
     mapping(bytes32 => Certificate) public certificates;
 
-    event CertificateIssued(
-        bytes32 indexed certificateHash,
-        address indexed recipient
-    );
+    event CertificateIssued(bytes32 indexed certificateHash, address indexed recipient);
 
     constructor() {
         owner = msg.sender;
@@ -29,13 +26,8 @@ contract CertificateNFT {
         _;
     }
 
-    function issueCertificate(
-        string memory name,
-        string memory degreeName,
-        string memory subject,
-        address recipient,
-        uint256 timestamp
-    ) public onlyOwner {
+    function issueCertificate(string memory name, string memory degreeName,string memory subject,address recipient, uint256 timestamp) 
+    public onlyOwner {
         require(recipient != address(0), "Invalid recipient address");
         bytes32 certificateHash = keccak256(
             abi.encodePacked(recipient)
@@ -45,24 +37,12 @@ contract CertificateNFT {
             "Certificate already issued"
         );
 
-        certificates[certificateHash] = Certificate(
-            name,
-            degreeName,
-            subject,
-            recipient,
-            timestamp,
-            true
-        );
+        certificates[certificateHash] = Certificate(name,degreeName,subject,recipient,timestamp,true );
         emit CertificateIssued(certificateHash, recipient);
     }
 
-    function verifyCertificate(
-        string memory name,
-        string memory degreeName,
-        string memory subject,
-        address recipient,
-        uint256 timestamp
-    ) public view returns (bool) {
+    function verifyCertificate(string memory name,string memory degreeName,string memory subject,address recipient,uint256 timestamp) 
+    public view returns (bool) {
         bytes32 certificateHash = keccak256(
             abi.encodePacked(name, degreeName, subject, recipient, timestamp)
         );
@@ -70,14 +50,7 @@ contract CertificateNFT {
     }
 
     function viewCertificate(address studentAddress)
-        public
-        view
-        returns (
-            string memory name,
-            string memory degreeName,
-            string memory subject,
-            uint256 timestamp
-        )
+        public view returns (string memory name,string memory degreeName,string memory subject, uint256 timestamp)
     {
         bytes32 certificateHash = keccak256(
             abi.encodePacked(studentAddress)
